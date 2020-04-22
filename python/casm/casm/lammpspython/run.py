@@ -13,10 +13,10 @@ class LAMMPSError(Exception):
         return self.msg
 
 
-def run(initfile, potentialfile):
+def run(initfile, potentialfile, poscar):
     print("Begin lammps run:")
     sys.stdout.flush()
-    calc = RelaxCalc(initfile, potentialfile)
+    calc = RelaxCalc(initfile, potentialfile, poscar)
     result = calc.run_calc()
     if result is None:
         LAMMPSError("No results from lammps!")

@@ -12,6 +12,7 @@ from casm.misc import compat, noindent
 from casm.project import Project, Selection
 import casm.qewrapper
 from casm.vaspwrapper import Relax
+import casm.lammpswrapper
 
 # casm-calc --configs selection
 #           --software "quantumespresso" "vasp"
@@ -85,11 +86,14 @@ def main(argv = None):
         settings["software"]="vasp"
       software=settings["software"]
       print("Relevant software is:", software)
+
     if args.setup:
       sel.write_pos()
       for configname in sel.data["configname"]:
         if software == "quantumespresso":
           relaxation = casm.qewrapper.Relax(proj.dir.configuration_dir(configname))
+        elif software == "lammps":
+          relaxation = casm.lammpswrapper.Relax(proj.dir.configuration_dir(configname))
         else:
           relaxation = Relax(proj.dir.configuration_dir(configname))
         relaxation.setup()
@@ -99,6 +103,8 @@ def main(argv = None):
       for configname in sel.data["configname"]:
         if software == "quantumespresso":
           relaxation = casm.qewrapper.Relax(proj.dir.configuration_dir(configname))
+        elif software == "lammps":
+          relaxation = casm.lammpswrapper.Relax(proj.dir.configuration_dir(configname))
         else:
           relaxation = Relax(proj.dir.configuration_dir(configname))
         relaxation.submit()
@@ -108,6 +114,8 @@ def main(argv = None):
       for configname in sel.data["configname"]:
         if software == "quantumespresso":
           relaxation = casm.qewrapper.Relax(proj.dir.configuration_dir(configname))
+        elif software == "lammps":
+          relaxation = casm.lammpswrapper.Relax(proj.dir.configuration_dir(configname))
         else:
           relaxation = Relax(proj.dir.configuration_dir(configname))
         relaxation.run()
@@ -125,6 +133,8 @@ def main(argv = None):
                 settings["outfilename"]="std.out"
             outfilename = settings["outfilename"]
             output = casm.qewrapper.Relax.properties(finaldir,outfilename)
+          elif software == "lammps":
+            output = casm.lammpswrapper.Relax.properties(calcdir)
           else:
             output = Relax.properties(finaldir)
           calc_props = proj.dir.calculated_properties(configname, clex)

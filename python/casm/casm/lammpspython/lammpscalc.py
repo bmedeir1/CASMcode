@@ -8,14 +8,15 @@ import json
 import re
 
 class LammpsCalc(object):
-    def __init__(self, initfilepath, potfilepath):
+    def __init__(self, initfilepath, potfilepath, poscar):
         # self.lmp = lammps()
         self.initpath = initfilepath
         self.potentialpath = potfilepath
+        self.poscar = poscar
         # self.scel = tokens[0]
         # self.id = tokens[1]
         self.pylmp = PyLammps()
-        # self.configurename = configurename
+        self.configurename = None
         # self.clex = clex
         self.labels_dict = {}
         self.num_types_cell = None
@@ -61,7 +62,7 @@ class LammpsCalc(object):
         # Dir is defined at CASMcode/python/casm/casm/project/project.py
         # dir.__setattr__("POS", open(self.configurename + "/POS"))
         # pos_file = dir.POS(self.configname)
-        pos_file = open(self.configurename + "/POS")
+        pos_file = open(self.poscar)
         # assert \
         self.configurename == pos_file.readline().strip()
         a0 = float(pos_file.readline().strip())

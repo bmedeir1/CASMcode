@@ -106,6 +106,11 @@ class Relax(object):
 
         print("Lammps Relax object constructed\n")
         sys.stdout.flush()
+        self.properties =None
+        self.setup_done = False
+        self.submitted = False
+        self.run_done = False
+
 
     def run_settings(self):
         self.run_settings['initfile'], self.run_settings['potentialfile'], \
@@ -120,23 +125,29 @@ class Relax(object):
 
         self.infiles = lammps_input_file_names(self.casm_directories, self.configname, self.casm_settings.default_clex,
                                      initfilename=initfilename, potfilename=potfilename)
-
+        self.setup_done = True
         return self.infiles
 
     def submit(self):
         self.run()
+        self.submitted = True
 
     def run(self):
+        if not self.setup_done:
+            self.setup()
         # construct the Relax object
         relax = lammpspython.Relax(self.calcdir, self.run_settings())
-        properties = relax.run()
-        if properties is not None:
-            self.finalize(properties)
+        self.properties = relax.run()
+        if self.properties is not None:
+            self.finalize(self.properties)
         else:
             LAMMPSWrapperError("Lammps relaxation failed")
+        self.run_done = True
 
 
     def report_status(self, status, failure_type=None):
+        if not self.run_done:
+            self.run()
         """Report calculation status to status.json file in configuration directory.
 
         Args:
@@ -163,6 +174,8 @@ class Relax(object):
         sys.stdout.flush()
 
     def finalize(self, output):
+        if not self.run_done:
+            self.run()
         # output = self.properties(qedir, outfilename)
         outputfile = os.path.join(self.calcdir, "properties.calc.json")
         with open(outputfile, 'wb') as file:
@@ -172,9 +185,18 @@ class Relax(object):
         sys.stdout.flush()
         self.report_status('complete')
 
+    def is_submitted(self):
+        return self.submitted
+
+    def report(self):
+        self.finalize()
+
     @staticmethod
-    def properties(properties):
+    def properties(calcdir):
         """Report results to properties.calc.json file in configuration directory, after checking for electronic convergence."""
-        return properties
+        propfile = os.path.join(calcdir, "properties.calc.json")
+        props = open(propfile).read()
+        prop_dict = json.JSONDecoder().decode(props)
+        return prop_dict
 
 

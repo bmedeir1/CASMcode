@@ -74,7 +74,8 @@ class Relax(object):
 
         self.initfilepath = None
         self.potfilepath = None
-        self.setup()
+        self.poscar = None
+        self.setup(self.settings)
         # set default settings:
         # if not "npar" in self.settings:
         #     self.settings["npar"] = None
@@ -116,11 +117,12 @@ class Relax(object):
         sys.stdout.flush()
 
 
-    def setup(self, initdir, settings):
+    def setup(self, settings):
         """ mv all files and directories (besides initdir) into initdir """
 
         self.initfilepath = settings['initfile']
         self.potfilepath = settings['potentialfile']
+        self.poscar = settings['poscar']
 
         # print("Moving files into initial run directory:", initdir)
         # initdir = os.path.abspath(initdir)
@@ -146,6 +148,6 @@ class Relax(object):
         # initfilename = self.settings["initfilename"]
         # potfilename = self.settings["potfilename"]
         # outfilename = self.settings["outfilename"]
-        properties = casm.lammpspython.run(initfile=self.initfilepath, potentialfile=self.potfilepath)
+        properties = casm.lammpspython.run(initfile=self.initfilepath, potentialfile=self.potfilepath, poscar=self.poscar)
         return properties
 

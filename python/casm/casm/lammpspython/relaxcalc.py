@@ -1,13 +1,14 @@
 from casm.lammpspython import lammpscalc
+import os
 
 class RelaxCalc(lammpscalc.LammpsCalc):
-    def __init__(self, initfilepath, potfilepath):
-        super().__init__(initfilepath, potfilepath)
+    def __init__(self, initfilepath, potfilepath, poscar):
+        super().__init__(initfilepath, potfilepath, poscar)
         self.pylmp.file(initfilepath)
         self.get_labels()
         self.create_structure()
         # self.lmp.command("read_data         data.lmp")
-        self.pylmp.file(potfilepath)
+        self.pylmp.file(potfilepath) # Might need to change this to read in potential file so that potential file path is correct
         # self.visualize()
         # self.run_calc()
         # self.create_properties()
@@ -15,7 +16,7 @@ class RelaxCalc(lammpscalc.LammpsCalc):
         # self.report_status()
 
     def get_labels(self):
-        with open("./potential.mod") as fp:
+        with open(self.potentialpath) as fp:
             pair_coeff = None
             line = fp.readline()
             while line:
@@ -26,7 +27,7 @@ class RelaxCalc(lammpscalc.LammpsCalc):
                 line = fp.readline()
 
             if pair_coeff is None:
-                raise Exception("pair_coeff command not found in potential.mod or potential.mod does not exist!")
+                raise Exception("pair_coeff command not found in potential file or potential file does not exist!")
 
             potential_filename = None
             nums = []
@@ -40,7 +41,7 @@ class RelaxCalc(lammpscalc.LammpsCalc):
                     nums.append(i)
                     i += 1
                 elif last_word.isnumeric() or last_word == '*':
-                    potential_filename = word
+                    potential_filename = self.path_to_init(word)
                 elif potential_filename is not None:
                     atoms.append(word)
 
@@ -116,3 +117,8 @@ class RelaxCalc(lammpscalc.LammpsCalc):
         return self.create_properties()
     # def make_IPylammps(self):
     #     super().make_IPylammps()
+
+    def path_to_init(self, tail):
+        splitpath = os.path.split(self.potentialpath)
+        head = splitpath[0]
+        return head + tail
